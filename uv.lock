@@ -292,9 +292,6 @@ requires-dist = [
     { name = "spotipy", specifier = "==2.24.0" },
 ]
 
-[package.metadata.requires-dev]
-dev = []
-
 [[package]]
 name = "spotipy"
 version = "2.24.0"
