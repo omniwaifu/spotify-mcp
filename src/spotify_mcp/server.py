@@ -17,6 +17,10 @@ from spotipy import SpotifyException
 
 from . import spotify_api
 from .utils import normalize_redirect_uri
+from .external_metadata import ExternalMetadataClient
+
+# Configuration constants
+EXTERNAL_API_CALL_LIMIT = int(os.getenv("EXTERNAL_API_CALL_LIMIT", "3"))  # Limit external API calls per search
 
 
 def setup_logger():
@@ -35,6 +39,7 @@ logger = setup_logger()
 if spotify_api.REDIRECT_URI:
     spotify_api.REDIRECT_URI = normalize_redirect_uri(spotify_api.REDIRECT_URI)
 spotify_client = spotify_api.Client(logger)
+external_metadata_client = ExternalMetadataClient(logger)
 
 server = Server("spotify-mcp")
 
@@ -144,6 +149,36 @@ class Authentication(ToolModel):
     )
 
 
+class EnhancedSearch(ToolModel):
+    """Enhanced search that combines Spotify data with external metadata sources (Last.fm, MusicBrainz).
+    Provides richer information including similar artists, genre tags, detailed music relationships, and community data.
+    """
+
+    query: str = Field(description="Search query term")
+    search_type: str = Field(
+        default="track",
+        description="Type of search: 'track', 'artist', or 'album'"
+    )
+    include_similar: Optional[bool] = Field(
+        default=True,
+        description="Include similar artists from Last.fm (for artist searches)"
+    )
+    limit: Optional[int] = Field(
+        default=5, 
+        description="Maximum number of results to return"
+    )
+
+
+class SimilarArtists(ToolModel):
+    """Get similar artists based on Last.fm collaborative filtering data."""
+    
+    artist: str = Field(description="Artist name to find similar artists for")
+    limit: Optional[int] = Field(
+        default=10,
+        description="Maximum number of similar artists to return"
+    )
+
+
 @server.list_prompts()
 async def handle_list_prompts() -> list[types.Prompt]:
     return []
@@ -166,6 +201,8 @@ async def handle_list_tools() -> list[types.Tool]:
         GetInfo.as_tool(),
         Playlist.as_tool(),
         Authentication.as_tool(),
+        EnhancedSearch.as_tool(),
+        SimilarArtists.as_tool(),
     ]
     logger.info(f"Available tools: {[tool.name for tool in tools]}")
     return tools
@@ -465,6 +502,86 @@ async def handle_call_tool(
                                 text=f"Unknown authentication action: {action}. Supported actions are: get_auth_url, exchange_code, check_auth.",
                             )
                         ]
+            
+            case "EnhancedSearch":
+                logger.info(f"Enhanced search with arguments: {arguments}")
+                query = arguments.get("query", "")
+                search_type = arguments.get("search_type", "track")
+                include_similar = arguments.get("include_similar", True)
+                limit = arguments.get("limit", 5)
+                
+                # First, get Spotify search results
+                spotify_results = spotify_client.search(
+                    query=query,
+                    qtype=search_type,
+                    limit=limit
+                )
+                
+                enhanced_results = {
+                    "query": query,
+                    "search_type": search_type,
+                    "spotify_results": spotify_results,
+                    "external_metadata": []
+                }
+                
+                # Enhance each result with external metadata
+                if search_type == "track" and spotify_results.get("tracks"):
+                    for track in spotify_results["tracks"][:EXTERNAL_API_CALL_LIMIT]:
+                        try:
+                            enhanced_info = external_metadata_client.get_enhanced_track_info(
+                                track.get("artist", ""), track.get("name", "")
+                            )
+                            enhanced_results["external_metadata"].append(enhanced_info)
+                        except Exception as e:
+                            logger.error(f"Error enhancing track metadata: {e}")
+                
+                elif search_type == "artist" and spotify_results.get("artists"):
+                    for artist in spotify_results["artists"][:EXTERNAL_API_CALL_LIMIT]:
+                        try:
+                            enhanced_info = external_metadata_client.get_enhanced_artist_info(
+                                artist.get("name", "")
+                            )
+                            # Add similar artists if requested
+                            if include_similar:
+                                enhanced_info["similar_artists"] = external_metadata_client.get_similar_artists(
+                                    artist.get("name", ""), limit=5
+                                )
+                            enhanced_results["external_metadata"].append(enhanced_info)
+                        except Exception as e:
+                            logger.error(f"Error enhancing artist metadata: {e}")
+                
+                return [
+                    types.TextContent(
+                        type="text", text=json.dumps(enhanced_results, indent=2)
+                    )
+                ]
+            
+            case "SimilarArtists":
+                logger.info(f"Getting similar artists with arguments: {arguments}")
+                artist = arguments.get("artist", "")
+                limit = arguments.get("limit", 10)
+                
+                if not artist:
+                    return [
+                        types.TextContent(
+                            type="text", text="Artist name is required for similar artists search"
+                        )
+                    ]
+                
+                similar_artists = external_metadata_client.get_similar_artists(artist, limit)
+                
+                result = {
+                    "artist": artist,
+                    "similar_artists": similar_artists,
+                    "count": len(similar_artists)
+                }
+                
+                return [
+                    types.TextContent(
+                        type="text", text=json.dumps(result, indent=2)
+                    )
+                ]
+            
             case _:
                 error_msg = f"Unknown tool: {name}"
                 logger.error(error_msg)
