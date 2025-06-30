@@ -2,7 +2,7 @@
 
 A Model Context Protocol (MCP) server that connects Claude to Spotify, allowing you to control your music directly from conversations.
 
-## ✨ Features
+## Features
 
 - **Playback Control**: Play, pause, skip tracks, and control volume
 - **Music Discovery**: Search for tracks, albums, artists, and playlists
@@ -14,7 +14,7 @@ A Model Context Protocol (MCP) server that connects Claude to Spotify, allowing 
 - **Music Information**: Get detailed info about any track, album, or artist
 - **Smart Authentication**: Automatic token management - authenticate once, use forever
 
-## 🚀 Quick Start
+## Quick Start
 
 ### 1. Get Spotify API Credentials
 
@@ -75,7 +75,7 @@ Add this to your Claude Desktop config file:
 3. **Follow the prompts** to authenticate (one-time setup)
 4. **Start using Spotify commands!**
 
-## 💬 Example Conversations
+## Example Conversations
 
 ```
 You: "Play some jazz music"
@@ -97,14 +97,14 @@ You: "Skip to the next song"
 Claude: [Skips track]
 ```
 
-## 🔧 Requirements
+## Requirements
 
 - **Spotify Premium** (required for playback control)
 - **Python 3.12+**
 - **uv** package manager
 - **Claude Desktop**
 
-## 🛠️ Development & Testing
+## Development & Testing
 
 Test your setup before using with Claude:
 
@@ -116,7 +116,7 @@ python test_auth.py
 python test_auth.py YOUR_AUTH_CODE_HERE
 ```
 
-## 🔍 Debugging
+## Debugging
 
 ### Common Issues
 
@@ -135,7 +135,7 @@ python test_auth.py YOUR_AUTH_CODE_HERE
   npx @modelcontextprotocol/inspector uv --directory /path/to/spotify-mcp run spotify-mcp
   ```
 
-## 🎵 Available Commands
+## Available Commands
 
 The server automatically handles all Spotify operations through natural conversation. You can:
 
@@ -154,18 +154,18 @@ The server automatically handles all Spotify operations through natural conversa
 - **Similar Artists**: Find artists similar to your favorites using Last.fm's collaborative filtering data
 - **Rich Metadata**: Additional context including community tags, listening statistics, and music database information
 
-## 🔐 Privacy & Security
+## Privacy & Security
 
 - **Tokens are cached locally** and refreshed automatically
 - **No data is stored** beyond what's needed for authentication
 - **Standard OAuth2 flow** - same as any Spotify app
 - **Revoke access anytime** in your Spotify account settings
 
-## 🤝 Contributing
+## Contributing
 
 PRs welcome! This project is actively maintained.
 
-## 📄 License
+## License
 
 MIT License - see LICENSE file for details
 
