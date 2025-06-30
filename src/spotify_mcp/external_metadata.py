@@ -6,6 +6,7 @@ Integrates with Last.fm and MusicBrainz APIs to provide additional music metadat
 import logging
 import os
 import time
+import threading
 from typing import Dict, List, Optional, Any
 from urllib.parse import quote_plus
 
@@ -19,8 +20,29 @@ LASTFM_BASE_URL = "https://ws.audioscrobbler.com/2.0/"
 MUSICBRAINZ_BASE_URL = "https://musicbrainz.org/ws/2/"
 
 # Rate limiting for MusicBrainz (1 request per second)
-_last_musicbrainz_request = 0
 MUSICBRAINZ_RATE_LIMIT = 1.0
+
+class RateLimiter:
+    """Thread-safe rate limiter for MusicBrainz API."""
+    
+    def __init__(self, rate_limit: float = MUSICBRAINZ_RATE_LIMIT):
+        self._rate_limit = rate_limit
+        self._last_request = 0.0
+        self._lock = threading.Lock()
+    
+    def wait_if_needed(self):
+        """Wait if necessary to respect rate limits."""
+        with self._lock:
+            current_time = time.time()
+            time_since_last = current_time - self._last_request
+            
+            if time_since_last < self._rate_limit:
+                sleep_time = self._rate_limit - time_since_last
+                time.sleep(sleep_time)
+            
+            self._last_request = time.time()
+
+_musicbrainz_rate_limiter = RateLimiter()
 
 
 class ExternalMetadataClient:
@@ -106,7 +128,7 @@ class ExternalMetadataClient:
                         'name': similar_artist.get('name'),
                         'match_score': float(similar_artist.get('match', 0)),
                         'url': similar_artist.get('url'),
-                        'image': similar_artist.get('image', [{}])[-1].get('#text') if similar_artist.get('image') else None
+                        'image': similar_artist.get('image', [{}])[-1].get('#text') if similar_artist.get('image') and len(similar_artist['image']) > 0 else None
                     })
                 return similar
             
@@ -167,7 +189,7 @@ class ExternalMetadataClient:
                 'tags': [tag['name'] for tag in artist_data.get('tags', {}).get('tag', [])],
                 'url': artist_data.get('url'),
                 'bio': artist_data.get('bio', {}).get('summary'),
-                'image': artist_data.get('image', [{}])[-1].get('#text') if artist_data.get('image') else None
+                'image': artist_data.get('image', [{}])[-1].get('#text') if artist_data.get('image') and len(artist_data['image']) > 0 else None
             }
         
         return None
@@ -254,12 +276,4 @@ class ExternalMetadataClient:
     
     def _respect_musicbrainz_rate_limit(self):
         """Ensure we don't exceed MusicBrainz rate limits (1 request per second)."""
-        global _last_musicbrainz_request
-        current_time = time.time()
-        time_since_last = current_time - _last_musicbrainz_request
-        
-        if time_since_last < MUSICBRAINZ_RATE_LIMIT:
-            sleep_time = MUSICBRAINZ_RATE_LIMIT - time_since_last
-            time.sleep(sleep_time)
-        
-        _last_musicbrainz_request = time.time()
+        _musicbrainz_rate_limiter.wait_if_needed()

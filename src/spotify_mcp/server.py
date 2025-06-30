@@ -19,6 +19,9 @@ from . import spotify_api
 from .utils import normalize_redirect_uri
 from .external_metadata import ExternalMetadataClient
 
+# Configuration constants
+EXTERNAL_API_CALL_LIMIT = int(os.getenv("EXTERNAL_API_CALL_LIMIT", "3"))  # Limit external API calls per search
+
 
 def setup_logger():
     class Logger:
@@ -523,7 +526,7 @@ async def handle_call_tool(
                 
                 # Enhance each result with external metadata
                 if search_type == "track" and spotify_results.get("tracks"):
-                    for track in spotify_results["tracks"][:3]:  # Limit external API calls
+                    for track in spotify_results["tracks"][:EXTERNAL_API_CALL_LIMIT]:
                         try:
                             enhanced_info = external_metadata_client.get_enhanced_track_info(
                                 track.get("artist", ""), track.get("name", "")
@@ -533,7 +536,7 @@ async def handle_call_tool(
                             logger.error(f"Error enhancing track metadata: {e}")
                 
                 elif search_type == "artist" and spotify_results.get("artists"):
-                    for artist in spotify_results["artists"][:3]:  # Limit external API calls
+                    for artist in spotify_results["artists"][:EXTERNAL_API_CALL_LIMIT]:
                         try:
                             enhanced_info = external_metadata_client.get_enhanced_artist_info(
                                 artist.get("name", "")
