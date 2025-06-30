@@ -6,6 +6,9 @@ A Model Context Protocol (MCP) server that connects Claude to Spotify, allowing 
 
 - **Playback Control**: Play, pause, skip tracks, and control volume
 - **Music Discovery**: Search for tracks, albums, artists, and playlists
+- **Enhanced Search**: Combines Spotify data with external metadata from Last.fm and MusicBrainz
+- **Similar Artists**: Find similar artists using Last.fm's collaborative filtering
+- **Rich Metadata**: Genre tags, artist biographies, detailed music relationships, and community data
 - **Queue Management**: Add tracks to your queue and view what's coming up
 - **Playlist Management**: Create, modify, and manage your playlists
 - **Music Information**: Get detailed info about any track, album, or artist
@@ -19,6 +22,15 @@ A Model Context Protocol (MCP) server that connects Claude to Spotify, allowing 
 2. Create a new app
 3. Set the redirect URI to: `http://127.0.0.1:8080/callback`
 4. Note your **Client ID** and **Client Secret**
+
+### 1.5. Optional: Get Last.fm API Key (for Enhanced Features)
+
+For enhanced music discovery features:
+1. Go to [Last.fm API account creation](https://www.last.fm/api/account/create)
+2. Create an API account
+3. Note your **API Key**
+
+*Note: Enhanced features will work without Last.fm API key, but with limited external metadata.*
 
 ### 2. Install the Server
 
@@ -48,7 +60,8 @@ Add this to your Claude Desktop config file:
       "env": {
         "SPOTIFY_CLIENT_ID": "your_client_id_here",
         "SPOTIFY_CLIENT_SECRET": "your_client_secret_here",
-        "SPOTIFY_REDIRECT_URI": "http://127.0.0.1:8080/callback"
+        "SPOTIFY_REDIRECT_URI": "http://127.0.0.1:8080/callback",
+        "LASTFM_API_KEY": "your_lastfm_api_key_here"
       }
     }
   }
@@ -70,6 +83,12 @@ Claude: [Searches for jazz, starts playing]
 
 You: "What's currently playing?"
 Claude: [Shows current track info]
+
+You: "Find me artists similar to Radiohead"
+Claude: [Uses Last.fm data to find similar artists with match scores]
+
+You: "Do an enhanced search for 'Bohemian Rhapsody'"
+Claude: [Combines Spotify data with Last.fm genre tags, MusicBrainz metadata, and additional context]
 
 You: "Add this to my favorites playlist"
 Claude: [Adds current track to specified playlist]
@@ -122,10 +141,18 @@ The server automatically handles all Spotify operations through natural conversa
 
 - Control playback (play, pause, skip, volume)
 - Search for any music content
+- **Enhanced search** with external metadata (Last.fm + MusicBrainz)
+- **Find similar artists** using collaborative filtering
 - Manage your queue
 - Work with playlists
 - Get information about tracks/artists/albums
 - Check what's currently playing
+
+### New Enhanced Features
+
+- **Enhanced Search**: Combines Spotify results with genre tags, artist biographies, and detailed music relationships
+- **Similar Artists**: Find artists similar to your favorites using Last.fm's collaborative filtering data
+- **Rich Metadata**: Additional context including community tags, listening statistics, and music database information
 
 ## 🔐 Privacy & Security
 
