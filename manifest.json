@@ -1,0 +1,121 @@
+{
+  "dxt_version": "0.1",
+  "name": "spotify-mcp",
+  "display_name": "Spotify MCP Server",
+  "version": "0.2.0",
+  "description": "A Model Context Protocol server that connects Claude to Spotify for music control and discovery",
+  "long_description": "A comprehensive MCP server that enables Claude to interact with Spotify. Features include playback control (play, pause, skip), music discovery with enhanced search using Last.fm and MusicBrainz metadata, playlist management, queue control, and smart authentication with automatic token management. Supports finding similar artists, rich metadata retrieval, and natural language music commands.",
+  "author": {
+    "name": "Varun Srivastava",
+    "email": "varun.neal@berkeley.edu"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/varunneal/spotify-mcp"
+  },
+  "homepage": "https://github.com/varunneal/spotify-mcp",
+  "documentation": "https://github.com/varunneal/spotify-mcp#readme",
+  "support": "https://github.com/varunneal/spotify-mcp/issues",
+  "keywords": ["spotify", "music", "mcp", "claude", "playback", "search", "metadata", "lastfm"],
+  "license": "MIT",
+  "server": {
+    "type": "python",
+    "entry_point": "src/spotify_mcp/server.py",
+    "mcp_config": {
+      "command": "uv",
+      "args": [
+        "--directory",
+        "${__dirname}",
+        "run",
+        "spotify-mcp"
+      ],
+      "env": {
+        "SPOTIFY_CLIENT_ID": "${user_config.spotify_client_id}",
+        "SPOTIFY_CLIENT_SECRET": "${user_config.spotify_client_secret}",
+        "SPOTIFY_REDIRECT_URI": "${user_config.spotify_redirect_uri}",
+        "LASTFM_API_KEY": "${user_config.lastfm_api_key}",
+        "EXTERNAL_API_CALL_LIMIT": "${user_config.external_api_call_limit}"
+      }
+    }
+  },
+  "tools": [
+    {
+      "name": "SpotifyPlayback",
+      "description": "Manages current playback - get track info, start/pause/skip playback"
+    },
+    {
+      "name": "SpotifySearch", 
+      "description": "Search for tracks, albums, artists, or playlists on Spotify"
+    },
+    {
+      "name": "SpotifyQueue",
+      "description": "Manage playback queue - view queue or add tracks"
+    },
+    {
+      "name": "SpotifyGetInfo",
+      "description": "Get detailed information about Spotify items (tracks, albums, artists, playlists)"
+    },
+    {
+      "name": "SpotifyPlaylist",
+      "description": "Manage playlists - list, get tracks, add/remove tracks, change details"
+    },
+    {
+      "name": "SpotifyAuthentication",
+      "description": "Handle Spotify OAuth authentication flow"
+    },
+    {
+      "name": "SpotifyEnhancedSearch",
+      "description": "Enhanced search combining Spotify data with external metadata from Last.fm and MusicBrainz"
+    },
+    {
+      "name": "SpotifySimilarArtists",
+      "description": "Find similar artists using Last.fm collaborative filtering data"
+    }
+  ],
+  "compatibility": {
+    "claude_desktop": ">=0.10.0",
+    "platforms": ["darwin", "win32", "linux"],
+    "runtimes": {
+      "python": ">=3.12"
+    }
+  },
+  "user_config": {
+    "spotify_client_id": {
+      "type": "string",
+      "title": "Spotify Client ID",
+      "description": "Your Spotify app Client ID from the Spotify Developer Dashboard",
+      "required": true,
+      "sensitive": true
+    },
+    "spotify_client_secret": {
+      "type": "string", 
+      "title": "Spotify Client Secret",
+      "description": "Your Spotify app Client Secret from the Spotify Developer Dashboard",
+      "required": true,
+      "sensitive": true
+    },
+    "spotify_redirect_uri": {
+      "type": "string",
+      "title": "Spotify Redirect URI", 
+      "description": "Redirect URI configured in your Spotify app (should match your app settings)",
+      "default": "http://127.0.0.1:8080/callback",
+      "required": true
+    },
+    "lastfm_api_key": {
+      "type": "string",
+      "title": "Last.fm API Key (Optional)",
+      "description": "Last.fm API key for enhanced music metadata and similar artist features",
+      "required": false,
+      "sensitive": true
+    },
+    "external_api_call_limit": {
+      "type": "number",
+      "title": "External API Call Limit",
+      "description": "Maximum number of external API calls per enhanced search operation",
+      "default": 3,
+      "min": 1,
+      "max": 10,
+      "required": false
+    }
+  }
+}
