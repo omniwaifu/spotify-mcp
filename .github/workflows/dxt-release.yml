@@ -4,6 +4,9 @@ on:
   release:
     types: [published]
 
+permissions:
+  contents: write
+
 jobs:
   build-dxt:
     runs-on: ubuntu-latest
@@ -187,11 +190,7 @@ jobs:
         unzip -l spotify-mcp-dxt-*.zip | head -20
     
     - name: Upload DXT package to release
-      uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ github.event.release.upload_url }}
-        asset_path: ./spotify-mcp-dxt-${{ github.event.release.tag_name }}.zip
-        asset_name: spotify-mcp-dxt-${{ github.event.release.tag_name }}.zip
-        asset_content_type: application/zip
+      run: |
+        gh release upload ${{ github.event.release.tag_name }} spotify-mcp-dxt-${{ github.event.release.tag_name }}.zip
