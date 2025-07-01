@@ -182,15 +182,15 @@ jobs:
     - name: Create DXT package archive
       run: |
         cd dxt-package
-        zip -r ../spotify-mcp-dxt-${{ github.event.release.tag_name }}.zip .
+        zip -r ../spotify-mcp-${{ github.event.release.tag_name }}.dxt .
         cd ..
         
         # Show the archive info
-        ls -la spotify-mcp-dxt-*.zip
-        unzip -l spotify-mcp-dxt-*.zip | head -20
+        ls -la spotify-mcp-*.dxt
+        unzip -l spotify-mcp-*.dxt | head -20
     
     - name: Upload DXT package to release
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        gh release upload ${{ github.event.release.tag_name }} spotify-mcp-dxt-${{ github.event.release.tag_name }}.zip
+        gh release upload ${{ github.event.release.tag_name }} spotify-mcp-${{ github.event.release.tag_name }}.dxt
