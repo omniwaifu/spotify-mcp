@@ -1,0 +1,121 @@
+{
+  "dxt_version": "0.1",
+  "name": "spotify-mcp",
+  "display_name": "Spotify MCP Server",
+  "version": "0.2.0",
+  "description": "MCP server for controlling Spotify playback, searching music, and managing playlists",
+  "long_description": "A comprehensive MCP server that provides 8 tools for Spotify integration including playback control, music search, queue management, playlist operations, authentication handling, and enhanced search with Last.fm/MusicBrainz metadata enrichment.",
+  "author": {
+    "name": "Varun Srivastava",
+    "email": "varun.neal@berkeley.edu"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/omniwaifu/spotify-mcp"
+  },
+  "homepage": "https://github.com/omniwaifu/spotify-mcp",
+  "support": "https://github.com/omniwaifu/spotify-mcp/issues",
+  "server": {
+    "type": "python",
+    "entry_point": "src/spotify_mcp/server.py",
+    "mcp_config": {
+      "command": "uv",
+      "args": [
+        "run",
+        "--with",
+        "spotify-mcp@${__dirname}",
+        "python",
+        "-m",
+        "spotify_mcp.server"
+      ],
+      "env": {
+        "SPOTIFY_CLIENT_ID": "${user_config.spotify_client_id}",
+        "SPOTIFY_CLIENT_SECRET": "${user_config.spotify_client_secret}",
+        "SPOTIFY_REDIRECT_URI": "${user_config.spotify_redirect_uri}",
+        "LASTFM_API_KEY": "${user_config.lastfm_api_key}",
+        "EXTERNAL_API_CALL_LIMIT": "${user_config.external_api_call_limit}"
+      }
+    }
+  },
+  "tools": [
+    {
+      "name": "SpotifyPlayback",
+      "description": "Control Spotify playback (get current track, start/pause/skip)"
+    },
+    {
+      "name": "SpotifySearch", 
+      "description": "Search for tracks, albums, artists, or playlists on Spotify"
+    },
+    {
+      "name": "SpotifyQueue",
+      "description": "Manage the playback queue (get queue, add tracks)"
+    },
+    {
+      "name": "SpotifyGetInfo",
+      "description": "Get detailed information about Spotify items (track, album, artist, playlist)"
+    },
+    {
+      "name": "SpotifyPlaylist",
+      "description": "Manage Spotify playlists (list, get tracks, add/remove tracks, change details)"
+    },
+    {
+      "name": "SpotifyAuthentication",
+      "description": "Handle Spotify OAuth authentication flow"
+    },
+    {
+      "name": "SpotifyEnhancedSearch",
+      "description": "Enhanced search combining Spotify data with Last.fm/MusicBrainz metadata"
+    },
+    {
+      "name": "SpotifySimilarArtists",
+      "description": "Get similar artists using Last.fm collaborative filtering data"
+    }
+  ],
+  "keywords": ["spotify", "music", "mcp", "playback", "streaming", "playlist"],
+  "license": "MIT",
+  "compatibility": {
+    "platforms": ["darwin", "win32", "linux"],
+    "runtimes": {
+      "python": ">=3.12"
+    }
+  },
+  "user_config": {
+    "spotify_client_id": {
+      "type": "string",
+      "title": "Spotify Client ID",
+      "description": "Your Spotify App Client ID from the Spotify Developer Dashboard",
+      "sensitive": true,
+      "required": true
+    },
+    "spotify_client_secret": {
+      "type": "string", 
+      "title": "Spotify Client Secret",
+      "description": "Your Spotify App Client Secret from the Spotify Developer Dashboard",
+      "sensitive": true,
+      "required": true
+    },
+    "spotify_redirect_uri": {
+      "type": "string",
+      "title": "Spotify Redirect URI", 
+      "description": "OAuth redirect URI (must match your Spotify App settings)",
+      "default": "http://localhost:8888/callback",
+      "required": true
+    },
+    "lastfm_api_key": {
+      "type": "string",
+      "title": "Last.fm API Key (Optional)",
+      "description": "API key for enhanced metadata from Last.fm (optional, improves search results)",
+      "sensitive": true,
+      "required": false
+    },
+    "external_api_call_limit": {
+      "type": "number",
+      "title": "External API Call Limit",
+      "description": "Maximum number of external API calls per enhanced search operation",
+      "default": 3,
+      "min": 1,
+      "max": 10,
+      "required": false
+    }
+  }
+}
